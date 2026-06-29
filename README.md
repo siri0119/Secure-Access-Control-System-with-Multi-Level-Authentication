@@ -29,3 +29,16 @@ The following layout illustrates how the LPC2148 acts as the central brain, brid
                             │    AT24C256 EEPROM     │
                             │ (Secure Password Vault)│
                             └────────────────────────┘
+Images/
+│── banner.png
+│── architecture.png
+│── block_diagram.png
+│── authentication_flow.png
+│── sequence_diagram.png
+│── state_diagram.png
+│── data_flow.png
+│── use_case.png
+│── hardware_setup.png
+│── fingerprint_module.png
+│── lcd_output.png
+│── project_demo.gif
