@@ -109,108 +109,31 @@ Once activated, administrator can
 ---
 
 ## Password Update Process
+<p align="center">
 
-```
-Press Admin Button
-        │
-        ▼
-Verify Current Password
-        │
-        ▼
-Enter New Password
-        │
-        ▼
-Confirm Password
-        │
-        ▼
-Same ?
- │           │
-No          Yes
- │           │
- │      Save EEPROM
- │
-Retry
-```
+![Project Screenshot](password.png)
 
+</p>
 ---
 
 ## Fingerprint Enrollment
 
-```
-Select Enroll
+<p align="center">
 
-↓
+![Project Screenshot](biometric.png)
 
-Capture Image 1
-
-↓
-
-Capture Image 2
-
-↓
-
-Generate Template
-
-↓
-
-Assign User Index
-
-↓
-
-Store into Sensor Flash
-
-↓
-
-Success
-```
-
+</p>
 ---
 
 ## Fingerprint Delete
+<p align="center">
 
-```
-Admin
+![Project Screenshot](deletion.png)
 
-↓
-
-Delete
-
-↓
-
-Enter Finger ID
-
-↓
-
-Delete Template
-
-↓
-
-Success
-```
-
+</p>
 ---
 
-# 🔄 Data Flow Diagram
 
-```text
-Keypad
-   │
-   ▼
-LPC2148
-   │
-   ├──────────────► LCD
-   │
-   ├──────────────► EEPROM
-   │
-   ├──────────────► Fingerprint Sensor
-   │
-   └──────────────► Motor Driver
-                          │
-                          ▼
-                      Door Lock
-```
-
----
 
 # 💾 Memory Allocation
 
@@ -237,30 +160,12 @@ LPC2148
 
 # 🔒 Security Layers
 
-```
-Layer 1
+<p align="center">
 
-User ID
+![Project Screenshot](layer.png)
 
-↓
-
-Layer 2
-
-Password Verification
-
-↓
-
-Layer 3
-
-Fingerprint Authentication
-
-↓
-
-Door Unlock
-```
-
+</p>
 ---
-
 # 🚀 Features
 
 - Multi-Level Authentication
