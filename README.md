@@ -27,13 +27,12 @@ before unlocking the door.
 
 The system stores passwords securely inside an **AT24C256 EEPROM** while fingerprint templates are maintained in the **R305 sensor flash memory**.
 
----https://github.com/siri0119/Secure-Access-Control-System-with-Multi-Level-Authentication/blob/6e69490cdce9b44dba150120fc8d2b0fd8806887/system_architecture.png
 
 # 📷 Complete System Architecture
 
 <p align="center">
 
-<img src="IMAGES/system_architecture.png" width="900">
+<img src="(https://github.com/siri0119/Secure-Access-Control-System-with-Multi-Level-Authentication/blob/6e69490cdce9b44dba150120fc8d2b0fd8806887/system_architecture.png)" width="900">
 
 </p>
 
