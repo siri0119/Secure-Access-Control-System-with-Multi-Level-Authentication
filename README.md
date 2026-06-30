@@ -277,25 +277,6 @@ Door Unlock
 
 ---
 
-# 📂 Project Folder Structure
-
-```text
-Secure-Access-Control-System
-│
-├── SOURCE CODE
-│
-├── HEADER FILES
-│
-├── PROJECT REPORT
-│
-├── CIRCUIT DIAGRAM
-│
-├── README.md
-│
-└── IMAGES
-```
-
----
 
 # 📸 Project Gallery
 
@@ -352,17 +333,4 @@ Feel free to fork, modify and improve the project.
 
 ---
 
-# ⭐ Support
-
-If you like this project,
-
-⭐ Star this Repository
-
-🍴 Fork it
-
-📢 Share it
-
-```
-"Security begins with strong authentication."
-
-```
+# Thank You..
