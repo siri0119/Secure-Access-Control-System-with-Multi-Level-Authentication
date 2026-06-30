@@ -113,7 +113,7 @@ Door Lock
 
 <p align="center">
 
-<img src="IMAGES/authentication_flow.png" width="700">
+![Project Screenshot](Authentication.png)
 
 </p>
 
