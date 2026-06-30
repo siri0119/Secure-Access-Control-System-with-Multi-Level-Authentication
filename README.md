@@ -70,7 +70,7 @@ The system stores passwords securely inside an **AT24C256 EEPROM** while fingerp
 
 <p align="center">
 
-![Project Screenshot](ChatGPT Image Jun 30, 2026, 01_02_42 PM.png)
+![Project Screenshot](block.png)
 </p>
 
 ---
