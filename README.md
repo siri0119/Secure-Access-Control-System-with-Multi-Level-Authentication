@@ -32,8 +32,7 @@ The system stores passwords securely inside an **AT24C256 EEPROM** while fingerp
 
 <p align="center">
 
-<img src="(https://github.com/siri0119/Secure-Access-Control-System-with-Multi-Level-Authentication/blob/6e69490cdce9b44dba150120fc8d2b0fd8806887/system_architecture.png)" width="900">
-
+![Project Screenshot](images/screenshot.png)
 </p>
 
 ---
