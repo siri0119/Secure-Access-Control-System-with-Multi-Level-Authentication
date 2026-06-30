@@ -102,7 +102,7 @@ Once activated, administrator can
 
 <p align="center">
 
-<img src="IMAGES/admin_flow.png" width="900">
+![Project Screenshot](admin.png)
 
 </p>
 
