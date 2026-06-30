@@ -185,16 +185,12 @@ Once activated, administrator can
 
 # 📸 Project Gallery
 
-| System | Authentication |
-|---------|----------------|
-| ![](IMAGES/system_architecture.png) | ![](IMAGES/authentication_flow.png) |
+<p align="center">
 
+![Project Screenshot](1.png) | ![Project Screenshot](2.png) |![Project Screenshot](3.png) | ![Project Screenshot](c1.png) | ![Project Screenshot](c2.png)
+
+</p>
 ---
-
-| Admin | Block Diagram |
-|-------|----------------|
-| ![](IMAGES/admin_flow.png) | ![](IMAGES/block_diagram.jpg) |
-
 ---
 
 # 💻 Software Used
