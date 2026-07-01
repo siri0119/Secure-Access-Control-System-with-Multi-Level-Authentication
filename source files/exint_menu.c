@@ -18,7 +18,9 @@
 #include "r305.h"
 #include "l293d.h"
 
-#define OLD_ROM        
+//#define NEW_ROM      // Enable for fresh EEPROM initialization
+#define OLD_ROM        // Enable for reading existing EEPROM data
+
 extern u8 menu_flag;    /* Monitors external interrupt state for routine escapes */
 
 static u8 flag = 0;     /* UI Toggle flag to prevent screen flickering */
@@ -50,11 +52,24 @@ void init_eint2(void)
  */
 void init_ids(void)
 {
-        ids = 0;
-        i2c_eeprom_write_byte(0x50, 0x0000, ids);    /* Wipe record count */
-        ids = i2c_eeprom_read_byte(0x50, 0x0000);     /* Verify memory write loop */
-}
+#ifdef NEW_ROM
 
+        // Fresh EEPROM initialization
+        ids = 0;
+
+        // Store initial ID count into EEPROM address 0x0000
+        i2c_eeprom_write_byte(0x50, 0x0000, ids);
+
+#endif
+
+
+#ifdef OLD_ROM
+
+        // Read previously stored ID count from EEPROM
+        ids = i2c_eeprom_read_byte(0x50, 0x0000);
+
+#endif
+}
 /**
  * @brief  Interrupt Service Routine for EINT2. Drops system into configuration menu.
  */
