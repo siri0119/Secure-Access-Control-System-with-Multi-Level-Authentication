@@ -32,7 +32,7 @@ The system stores passwords securely inside an **AT24C256 EEPROM** while fingerp
 
 <p align="center">
 
-![Project Screenshot](system_architecture.png)
+![Project Screenshot](docs/system_architecture.png)
 </p>
 
 ---
@@ -70,7 +70,7 @@ The system stores passwords securely inside an **AT24C256 EEPROM** while fingerp
 
 <p align="center">
 
-![Project Screenshot](block.png)
+![Project Screenshot](docs/block.png)
 </p>
 
 ---
