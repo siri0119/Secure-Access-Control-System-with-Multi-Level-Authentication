@@ -663,7 +663,7 @@ PSWD:
         str_lcd("PASSWORD:");
         password_kpm(pw1);
 
-        if(strcmp((const char*)"1729", (const char *)pw1) != 0) /* Hardcoded default escape key */
+        if(strcmp((const char*)"0119", (const char *)pw1) != 0) /* Hardcoded default escape key */
         {
                 cmd_lcd(0x01);
                 str_lcd("WRONG PASSWORD");
