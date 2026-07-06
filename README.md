@@ -102,7 +102,7 @@ Once activated, administrator can
 
 <p align="center">
 
-![Project Screenshot](admin.png)
+![Project Screenshot](docs/admin.png)
 
 </p>
 
@@ -111,7 +111,7 @@ Once activated, administrator can
 ## Password Update Process
 <p align="center">
 
-![Project Screenshot](password.png)
+![Project Screenshot](docs/password.png)
 
 </p>
 ---
@@ -120,7 +120,7 @@ Once activated, administrator can
 
 <p align="center">
 
-![Project Screenshot](biometric.png)
+![Project Screenshot](docs/biometric.png)
 
 </p>
 ---
@@ -128,7 +128,7 @@ Once activated, administrator can
 ## Fingerprint Delete
 <p align="center">
 
-![Project Screenshot](deletion.png)
+![Project Screenshot](docs/deletion.png)
 
 </p>
 ---
@@ -162,7 +162,7 @@ Once activated, administrator can
 
 <p align="center">
 
-![Project Screenshot](layer.png)
+![Project Screenshot](docs/layer.png)
 
 </p>
 ---
@@ -187,7 +187,7 @@ Once activated, administrator can
 
 <p align="center">
 
-![Project Screenshot](1.jpeg) | ![Project Screenshot](2.jpeg) |![Project Screenshot](3.jpeg) | ![Project Screenshot](c1.jpeg) | ![Project Screenshot](c2.jpeg)
+![Project Screenshot](docs/1.jpeg) | ![Project Screenshot](docs/2.jpeg) |![Project Screenshot](docs/3.jpeg) | ![Project Screenshot](docs/c1.jpeg) | ![Project Screenshot](docs/c2.jpeg)
 
 </p>
 ---
