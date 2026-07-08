@@ -1,34 +1,65 @@
-/**
- * **************************************************************************
- * @file    exint_menu.h
- * @brief   Function declarations and vector table channels for System UI.
- * **************************************************************************
- */
-
 #include "types.h"
-#ifndef _EXINT_MENU_H_                 
-#define _EXINT_MEMU_H_                 
 
-/* Pin Hardware Mapping Definitions */
-#define EINT2_INPUT_PIN 0x0000C000    /* Map P0.7 as EINT2 Alternative Function */
-#define EINT2_VIC_CHNO 16             /* Channel 16 assigned to External Interrupt 2 */
+// Start header guard
+#ifndef _EXINT_MENU_H_
 
-/* Public API Functions Declarations */
-void init_eint2(void);                
-void eint2_isr(void) __irq;           
-unsigned short is_id_in_db(char id);  
-void enroll_id(void);                 
-void menu(void);                      
-s8 check_admin(void);                 
-void login(void);                     
-void forget_password(void);           
-void finger_edit(void);               
-void password_edit(void);             
-void init_ids(void);                  
-void disable(void);                   
-void enable(void);                    
-void edit(void);                      
-void delete_id(void);                 
+// Define header guard
+#define _EXINT_MEMU_H_
+
+// EINT2 input pin value
+#define EINT2_INPUT_PIN 0x0000C000
+
+// EINT2 VIC channel number
+#define EINT2_VIC_CHNO 16
+
+
+// Initialize EINT2
+void init_eint2(void);
+
+// EINT2 interrupt function
+void eint2_isr(void) __irq;
+
+// Check ID in database
+unsigned short is_id_in_db(char id);
+
+// Enroll new ID
+void enroll_id(void);
+
+// Open menu
+void menu(void);
+
+// Check admin
+s8 check_admin(void);
+
+// Login function
+void login(void);
+
+// Forgot password function
+void forget_password(void);
+
+// Edit fingerprint
+void finger_edit(void);
+
+// Edit password
+void password_edit(void);
+
+// Initialize IDs
+void init_ids(void);
+
+// Disable EINT2
+void disable(void);
+
+// Enable EINT2
+void enable(void);
+
+// Open edit menu
+void edit(void);
+
+// Delete ID
+void delete_id(void);
+
+// Display title
 void title(void);
 
+// End header guard
 #endif
