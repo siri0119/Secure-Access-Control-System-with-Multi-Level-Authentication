@@ -1,10 +1,3 @@
-/**
- * **************************************************************************
- * @file    kpm.c
- * @brief   Matrix Keypad Scanning, Number Parsers, and Password Masking Engine.
- * **************************************************************************
- */
-
 #include "kpm.h"
 #include "types.h"
 #include "macros.h"
@@ -12,12 +5,16 @@
 #include "lcd.h"
 #include <lpc21xx.h>
 
+// Menu flag
 u8 menu_flag = 0;
 
+// Enable keypad
 #define KEYPAD
 
+
+// Keypad values
 #ifdef KEYPAD
-/* Active Hardware layout Matrix translation array map */
+
 s32 kpmlut[4][4] =
 {
         {'1','2','3','A'},
@@ -25,7 +22,9 @@ s32 kpmlut[4][4] =
         {'7','8','9','-'},
         {'*','0','=','B'}
 };
+
 #else
+
 s32 kpmlut[4][4] =
 {
         {'1','2','3','4'},
@@ -33,179 +32,289 @@ s32 kpmlut[4][4] =
         {'9','0','+','-'},
         {'*','/','=','B'}
 };
+
 #endif
 
-/**
- * @brief  Configures the GPIO directions for Keypad Matrix row scanning.
- */
+
+// Initialize keypad
 void init_kpm(void)
 {
-        WNIBBLE(IODIR1,row0,15); /* Designate row pins as outputs, columns as inputs */
+        // Set row pins as output
+        WNIBBLE(IODIR1,row0,15);
 }
 
-/**
- * @brief  Samples line states across matrix input column connections.
- * @return 0 if keypress registered, 1 if lines idle high.
- */
+
+// Check keypad columns
 u32 colscan(void)
 {
+        // Return keypad column status
         return (RNIBBLE(IOPIN1,col0)<15)?0:1;
 }
 
-/**
- * @brief  Isolates and identifies the active pressed matrix row.
- */
+
+// Find pressed row
 u32 rowcheck(void)
 {
-        u32 rno;
+        u32 rno;   // Row number
+
+        // Check all rows
         for(rno=0;rno<4;rno++)
         {
-                WNIBBLE(IOPIN1,row0,~(1<<rno)); /* Drive individual test row down */
+                // Activate one row
+                WNIBBLE(IOPIN1,row0,~(1<<rno));
+
+                // Check key press
                 if(colscan()==0)
                 {
-                        break; /* Active target row isolated */
+                        break;
                 }
         }
-        WNIBBLE(IOPIN1,row0,0X0); /* Restore default low condition line levels */
+
+        // Clear rows
+        WNIBBLE(IOPIN1,row0,0X0);
+
+        // Return row number
         return rno;
 }
 
-/**
- * @brief  Isolates and identifies the active pressed matrix column.
- */
+
+// Find pressed column
 u32 colcheck(void)
 {
-        u32 cno;
+        u32 cno;   // Column number
+
+        // Check all columns
         for(cno=0;cno<4;cno++)
         {
+                // Check column
                 if(RBIT(IOPIN1,(col0+cno))==0)
                 {
-                        break; /* Active target column isolated */
+                        break;
                 }
         }
+
+        // Return column number
         return cno;
 }
 
-/**
- * @brief  Monitors the keypad matrix and decodes active character entries.
- */
+
+// Read keypad key
 s32 keyscan(void)
 {
-        s32 keyv,rno,cno;
-        while(colscan() && menu_flag==0); /* Wait loop until button down */
+        s32 keyv,rno,cno;   // Key, row and column values
+
+        // Wait for key press
+        while(colscan() && menu_flag==0);
+
+        // Check menu flag
         if(menu_flag==1)
         {
-                return -1; /* Exit routine instantly if interrupt breaks execution */
+                return -1;
         }
-        
+
+        // Find row
         rno = rowcheck();
+
+        // Find column
         cno = colcheck();
-        keyv = kpmlut[rno][cno]; /* Extract key character mapping translation */
-        while(!colscan());       /* Debounce loop waiting for button release */
+
+        // Get key value
+        keyv = kpmlut[rno][cno];
+
+        // Wait for key release
+        while(!colscan());
+
+        // Delay
         delay_ms(100);
+
+        // Return key
         return keyv;
 }
 
-/**
- * @brief  Assembles individual numeric keypress inputs into integers.
- */
+
+// Read number from keypad
 s32 readnum(void)
 {
-        s32 key;
-        s32 cnt = 0;
-        int num = 0;
+        s32 key;      // Key value
+        s32 cnt = 0;  // Digit count
+        int num = 0;  // Stores number
 
         while(1)
         {
-                        key = keyscan();
-                        if(key == -1)
-                        {
-                                cnt = 0;
-                                return -1;
-                        }
-                        if((key>='0') && (key<='9') && (cnt<4))
-                        {
-                                 cnt++;
-                                 char_lcd(key); /* Render value string character on screen display */
-                                 num = num*10 + (key-48); /* Left-shift integer base accumulator */
-                        }
-                        else if((key=='B') && (cnt!=0)) /* Delete functionality handling */
-                        {
-                                cnt--;
-                                cmd_lcd(0x10);  /* Move screen cursor backward */
-                                char_lcd(' ');  /* Clear terminal output character layout block */
-                                cmd_lcd(0x10);  /* Rewind processing position marker alignment */
-                                num /= 10;      /* Pop numerical base element */
-                        }
-                        else if((key == '=') && (cnt!=0)) /* Key submission indicator */
-                        {
-                                cnt = 0;
-                                return num;
-                        }
+                // Read key
+                key = keyscan();
+
+                // Check exit condition
+                if(key == -1)
+                {
+                        cnt = 0;
+
+                        return -1;
+                }
+
+                // Check numeric key
+                if((key>='0') && (key<='9') && (cnt<4))
+                {
+                        // Increase digit count
+                        cnt++;
+
+                        // Display digit
+                        char_lcd(key);
+
+                        // Add digit to number
+                        num = num*10 + (key-48);
+                }
+
+                // Check backspace key
+                else if((key=='B') && (cnt!=0))
+                {
+                        // Decrease digit count
+                        cnt--;
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Clear digit
+                        char_lcd(' ');
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Remove last digit
+                        num /= 10;
+                }
+
+                // Check enter key
+                else if((key == '=') && (cnt!=0))
+                {
+                        // Reset digit count
+                        cnt = 0;
+
+                        // Return number
+                        return num;
+                }
         }
 }
 
-/**
- * @brief  Accepts sensitive password characters and displays masking asterisks ('*').
- */
+
+// Read password from keypad
 void password_kpm(char *ptr)
 {
-        u8 a;
-        u8 cnt = 0;
+        u8 a;        // Key value
+        u8 cnt = 0;  // Digit count
 
         while(1)
         {
+                // Read key
                 a = keyscan();
+
+                // Check numeric key
                 if((a>='0') && (a<='9') && (cnt!=4))
                 {
+                        // Increase digit count
                         cnt++;
-                        char_lcd(a);     /* Briefly show plaintext input element */
+
+                        // Display digit
+                        char_lcd(a);
+
+                        // Delay
                         delay_ms(300);
-                        cmd_lcd(0x10);   /* Rewind line character cursor placement */
-                        char_lcd('*');   /* Overwrite entry with masking asterisk symbol */
-                        *ptr = a;        /* Store value char to destination array matrix element */
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Display star
+                        char_lcd('*');
+
+                        // Store password digit
+                        *ptr = a;
+
+                        // Move pointer forward
                         ptr++;
                 }
-                else if((a=='B') && (cnt!=0)) /* backspace erase handling */
+
+                // Check backspace key
+                else if((a=='B') && (cnt!=0))
                 {
-                        cmd_lcd(0x10); char_lcd(' '); cmd_lcd(0x10);
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Clear digit
+                        char_lcd(' ');
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Decrease digit count
                         cnt--;
+
+                        // Move pointer backward
                         ptr--;
                 }
+
+                // Check enter key
                 else if((a=='=') && (cnt==4))
                 {
+                        // Reset digit count
                         cnt = 0;
-                        *ptr = '\0';     /* Inject terminal string termination token */
+
+                        // Add null character
+                        *ptr = '\0';
+
+                        // Exit function
                         return;
                 }
         }
 }
 
-/**
- * @brief  Captures custom array strings containing raw ID identifiers.
- */
+
+// Read ID from keypad
 void id_kpm(s8 *ptr)
 {
-        s8 a;
-        s8 cnt = 0;
+        s8 a;        // Key value
+        s8 cnt = 0;  // Digit count
 
         while(1)
         {
+                // Read key
                 a = keyscan();
+
+                // Check numeric key
                 if((a>='0') && (a<='9') && (cnt!=4))
                 {
+                        // Display digit
                         char_lcd(a);
+
+                        // Store digit
                         ptr[cnt] = a;
+
+                        // Increase digit count
                         cnt++;
                 }
+
+                // Check backspace key
                 else if((a=='B') && (cnt!=0))
                 {
+                        // Decrease digit count
                         cnt--;
-                        cmd_lcd(0x10); char_lcd(' '); cmd_lcd(0x10);
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
+
+                        // Clear digit
+                        char_lcd(' ');
+
+                        // Move cursor left
+                        cmd_lcd(0x10);
                 }
+
+                // Check enter key
                 else if((a == '=') && (cnt==4))
                 {
+                        // Add null character
                         ptr[cnt] = '\0';
+
+                        // Exit function
                         return;
                 }
         }
