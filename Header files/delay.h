@@ -1,18 +1,20 @@
-/**
- * ============================================================================
- * @file        delay.h
- * @brief       Timing Engine Abstract Implementation API Prototypes
- * ============================================================================
- */
+// Prevent multiple inclusion
+#ifndef _DELAY_H_
 
-#ifndef _DELAY_H_                
-#define _DELAY_H_                
+// Define header guard
+#define _DELAY_H_
 
-#include "types.h"               
+// Include user defined data types
+#include "types.h"
 
-/* Public Clock Gating APIs declarations */
+// Function declaration for microsecond delay
 void delay_us(u32);
+
+// Function declaration for millisecond delay
 void delay_ms(u32);
+
+// Function declaration for second delay
 void delay_s(u32);
 
+// End of header guard
 #endif
