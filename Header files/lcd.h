@@ -1,54 +1,118 @@
-#ifndef _LCD_H_                      
-#define _LCD_H_                      
+// Start header guard
+#ifndef _LCD_H_
 
-#include <string.h>                  
-#include "types.h"                  
+// Define header guard
+#define _LCD_H_
 
-/* ==========================================================================
- * PIN CONFIGURATION: Peripheral Routing Targets (LPC214x Ports)
- * ========================================================================== */
-#define DATA 8                       // Dynamic starting offset for 8-bit bus mapping
-#define RS 16                        // Register Select Control Pin Line
-#define RW 18                        // Read / Write System Toggle Line
-#define EN 17                        // Controller Strobe Pulse (Latch Enable)
 
-/* ==========================================================================
- * HD44780 CONTROLLER DRIVER COMMAND SET DEFINITIONS
- * ========================================================================== */
-#define LCD_CLR 0X01                 // Wipe display buffer ram entirely
-#define RET_CUR_HOME 0X02            // Rewind cursor coordinates to (0,0)
+// Include string functions
+#include <string.h>
 
-#define DISP_OFF 0X08                // Disable pixel display mask matrix
-#define DISP_ON 0X0C                 // Wake up active visual rendering
-#define DISP_ON_CUR_ON_BLK_ON 0X0F   // Visual array on, visible block cursor blinking
-#define DISP_ON_CUR_ON 0X0E          // Visual array on, underlining cursor active
+// Include user defined data types
+#include "types.h"
 
-#define DISP_SHIFT_OFF_INC 0X06      // Text flow: Left-to-Right auto-increment mode
-#define DISP_SHIFT_INC 0X07          // Accompany text flow with full layout shifting
 
-#define MODE_8BIT_LINE1 0X30         // Initialize 8-bit single row rendering layout
-#define MODE_8BIT_LINE2 0X38         // Initialize 8-bit dual row rendering layout
-#define MODE_4BIT_LINE1 0X20         // Initialize 4-bit single row rendering layout
-#define MODE_4BIT_LINE2 0X28         // Initialize 4-bit dual row rendering layout
+// LCD pin positions
+#define DATA 8   // Data pin starting position
 
-#define GOTO_LINE1_POS_0 0X80        // Row 1 Memory Home DDRAM Base Address
-#define GOTO_LINE2_POS_0 0XC0        // Row 2 Memory Home DDRAM Base Address
-#define GOTO_LINE3_POS_0 0X94        // Row 3 Memory Home DDRAM Base Address
-#define GOTO_LINE4_POS_0 0XD4        // Row 4 Memory Home DDRAM Base Address
+#define RS 16    // RS pin
 
-#define SHIFT_CUR_LEFT  0X10         // Move the cursor backward 1 index
-#define SHIFT_CUR_RIGHT 0X14         // Advance the cursor forward 1 index
+#define RW 18    // RW pin
 
-#define GOTO_CGRAM 0X40              // Shift interface pointer to custom glyph bank
+#define EN 17    // Enable pin
 
-/* ==========================================================================
- * CORE LCD FUNCTION INTERFACES
- * ========================================================================== */
-void write_lcd(u8);                  
-void cmd_lcd(u8);                    
-void init_lcd(void);                 
-void char_lcd(u8);                   
-void str_lcd(u8*);                   
-void u32_lcd(u32);                   
 
+// Clear LCD
+#define LCD_CLR 0X01
+
+// Return cursor to home
+#define RET_CUR_HOME 0X02
+
+
+// Turn display OFF
+#define DISP_OFF 0X08
+
+// Turn display ON
+#define DISP_ON 0X0C
+
+// Turn display, cursor and blink ON
+#define DISP_ON_CUR_ON_BLK_ON 0X0F
+
+// Turn display and cursor ON
+#define DISP_ON_CUR_ON 0X0E
+
+
+// Move cursor forward without display shift
+#define DISP_SHIFT_OFF_INC 0X06
+
+// Move cursor forward with display shift
+#define DISP_SHIFT_INC 0X07
+
+
+// Set 8-bit single line mode
+#define MODE_8BIT_LINE1 0X30
+
+// Set 8-bit two line mode
+#define MODE_8BIT_LINE2 0X38
+
+// Set 4-bit single line mode
+#define MODE_4BIT_LINE1 0X20
+
+// Set 4-bit two line mode
+#define MODE_4BIT_LINE2 0X28
+
+
+// First line starting position
+#define GOTO_LINE1_POS_0 0X80
+
+// Second line starting position
+#define GOTO_LINE2_POS_0 0XC0
+
+// Third line starting position
+#define GOTO_LINE3_POS_0 0X94
+
+// Fourth line starting position
+#define GOTO_LINE4_POS_0 0XD4
+
+
+// Move cursor left
+#define SHIFT_CUR_LEFT 0X10
+
+// Move cursor right
+#define SHIFT_CUR_RIGHT 0X14
+
+
+// Select CGRAM
+#define GOTO_CGRAM 0X40
+
+
+// Write data to LCD
+void write_lcd(u8);
+
+// Send command to LCD
+void cmd_lcd(u8);
+
+// Initialize LCD
+void init_lcd(void);
+
+// Display one character
+void char_lcd(u8);
+
+// Display string
+void str_lcd(u8*);
+
+// Display unsigned number
+void u32_lcd(u32);
+
+// Display float number
+void float_lcd(f32,s32);
+
+// Display signed number
+void s32_lcd(s32);
+
+// Display title
+void title(void);
+
+
+// End header guard
 #endif
