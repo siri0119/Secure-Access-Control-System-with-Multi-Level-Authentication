@@ -1,166 +1,255 @@
-#include <lpc21XX.h>                 // LPC214x Register Definitions
-#include "macros.h"                  // Bit manipulation wrappers
-#include "types.h"                   // Standard data type aliases
-#include "delay.h"                   // System timing routines
-#include "lcd.h"                     // Alphanumeric LCD controller definitions
+#include <lpc21XX.h>
+#include "macros.h"
+#include "types.h"
+#include "delay.h"
+#include "lcd.h"
 
-/**
- * @brief Low-level primitive to stream raw bytes to the HD44780 controller
- */
+
+// Write data to LCD
 void write_lcd(u8 data)
 {
-         G_SETBIT(IOCLR0,RW);        // Flag operational mode: Write (RW = 0)
-         WBYTE(IOPIN0,DATA,data);    // Assert 8-bit payload onto configured data lines
-         G_SETBIT(IOSET0,EN);        // Raise Enable to latch-high state
-         delay_us(1);                // Fulfill data setup time constraint
-         G_SETBIT(IOCLR0,EN);        // Fall Enable low to complete latch execution
-         delay_ms(2);                // Wait out execution delay for busy controller
+        // Select write operation
+        G_SETBIT(IOCLR0,RW);
+
+        // Send data to LCD
+        WBYTE(IOPIN0,DATA,data);
+
+        // Set enable pin
+        G_SETBIT(IOSET0,EN);
+
+        // Small delay
+        delay_us(1);
+
+        // Clear enable pin
+        G_SETBIT(IOCLR0,EN);
+
+        // Delay
+        delay_ms(2);
 }
 
-/**
- * @brief Routes execution parameter directives to the display logic
- */
+
+// Send command to LCD
 void cmd_lcd(u8 cmd)
 {
-        G_SETBIT(IOCLR0,RS);         // Map instruction register (RS = 0)
-        write_lcd(cmd);              // Send command payload
+        // Select command register
+        G_SETBIT(IOCLR0,RS);
+
+        // Send command
+        write_lcd(cmd);
 }
 
-/**
- * @brief Executes the formal hardware power-up initialization sequence
- */
+
+// Initialize LCD
 void init_lcd()
 {
-        WBYTE(IODIR0,DATA,0XFF);     // Allocate data lines as digital outputs
-        SETBIT(IODIR0,RS);           // Allocate Register Select pin as output
-        SETBIT(IODIR0,RW);           // Allocate Read/Write pin as output
-        SETBIT(IODIR0,EN);           // Allocate Enable strobe pin as output
+        // Set data pins as output
+        WBYTE(IODIR0,DATA,0XFF);
 
-        delay_ms(15);                // Post-power stabilization window
-        cmd_lcd(MODE_8BIT_LINE1);    // Step 1: Force controller wake-up
-        delay_ms(5);                 // Command execution padding
-        cmd_lcd(0x30);               // Step 2: Affirm interface width
-        delay_us(100);               // Microsecond recovery stall
-        cmd_lcd(MODE_8BIT_LINE1);    // Step 3: Re-verify operational status
-        
-        cmd_lcd(MODE_8BIT_LINE2);    // Multi-line rendering active (8-bit bus)
-        cmd_lcd(DISP_ON);            // Power matrix grid elements
-        cmd_lcd(LCD_CLR);            // Clear background buffers
-        cmd_lcd(DISP_SHIFT_OFF_INC); // Auto-advance cursor rightwards
+        // Set RS pin as output
+        SETBIT(IODIR0,RS);
+
+        // Set RW pin as output
+        SETBIT(IODIR0,RW);
+
+        // Set EN pin as output
+        SETBIT(IODIR0,EN);
+
+        // Delay
+        delay_ms(15);
+
+        // Set 8-bit mode
+        cmd_lcd(MODE_8BIT_LINE1);
+
+        // Delay
+        delay_ms(5);
+
+        // Send command
+        cmd_lcd(0x30);
+
+        // Small delay
+        delay_us(100);
+
+        // Set 8-bit mode
+        cmd_lcd(MODE_8BIT_LINE1);
+
+        // Set two line mode
+        cmd_lcd(MODE_8BIT_LINE2);
+
+        // Turn ON display
+        cmd_lcd(DISP_ON);
+
+        // Clear LCD
+        cmd_lcd(LCD_CLR);
+
+        // Set cursor increment mode
+        cmd_lcd(DISP_SHIFT_OFF_INC);
 }
 
-/**
- * @brief Prints an isolated ASCII symbol onto the screen grid
- */
+
+// Display one character
 void char_lcd(u8 character)
 {
-        SETBIT(IOSET0,RS);           // Map character data register (RS = 1)
-        write_lcd(character);        // Stream character payload
+        // Select data register
+        SETBIT(IOSET0,RS);
+
+        // Send character
+        write_lcd(character);
 }
 
-/**
- * @brief Decodes and streams a standard C string terminal buffer
- */
+
+// Display string
 void str_lcd(u8 *p)
 {
-        while(*p)                    // Interrogate for null-terminator string bound
-                char_lcd(*p++);      // Push character pointer and step index forward
+        // Display until null character
+        while(*p)
+                char_lcd(*p++);
 }
 
-/**
- * @brief Unrolls an unsigned 32-bit integer array into human-readable text
- */
+
+// Display unsigned number
 void u32_lcd(u32 n)
 {
-        u8 a[10];                    // Temporary extraction stack for maximum digits
-        s32 i=0;                     // Element cursor index
+        u8 a[10];   // Stores digits
 
-        if(n==0)                     
+        s32 i=0;    // Index variable
+
+        // Check number is zero
+        if(n==0)
         {
-                char_lcd('0');       // Handle base exception
+                // Display zero
+                char_lcd('0');
         }
         else
         {
-                while(n)             
+                // Get all digits
+                while(n)
                 {
-                        a[i]=(n%10)+48; // Capture remainder; lift to ASCII mapping
-                        i++;         
-                        n/=10;       // Scale integer down down by 1 radix base
+                        // Convert digit to ASCII
+                        a[i]=(n%10)+48;
+
+                        // Increase index
+                        i++;
+
+                        // Remove last digit
+                        n/=10;
                 }
-                for(--i;i>=0;i--)    // Empty tracking stack in FIFO chronological order
+
+                // Display digits in correct order
+                for(--i;i>=0;i--)
                 {
-                        char_lcd(a[i]); 
+                        // Display digit
+                        char_lcd(a[i]);
                 }
         }
 }
 
-/**
- * @brief Decodes floating-point arithmetic with configurable precision limits
- */
+
+// Display float number
 void float_lcd(f32 f,s32 np)
 {
-        s32 i;                       
+        s32 i;   // Stores integer value
 
-        if(f<0)                      // Manage negative parameters
+        // Check negative value
+        if(f<0)
         {
-                char_lcd('-');       
-                f*=-1;               // Flip inversion sign
+                // Display minus sign
+                char_lcd('-');
+
+                // Make value positive
+                f*=-1;
         }
 
-        i=f;                         // Extract the whole integer segment
-        u32_lcd(i);                  // Flush whole number out first
-        char_lcd('.');               // Hardcode decimal notation indicator
-        f = f-i;                     // Strip real values to fractional delta remnants
+        // Get integer part
+        i=f;
 
-        while(np)                    // Scale decimal accuracy bounds
+        // Display integer part
+        u32_lcd(i);
+
+        // Display decimal point
+        char_lcd('.');
+
+        // Get decimal part
+        f = f-i;
+
+        // Move decimal digits
+        while(np)
         {
-                f*=10;               // Push precision numbers above the radix line
-                np--;                
+                // Multiply by 10
+                f*=10;
+
+                // Decrease count
+                np--;
         }
 
-        i = f;                       // Isolate normalized decimal values
-        u32_lcd(i);                  // Render precise post-decimal value
+        // Convert decimal part to integer
+        i = f;
+
+        // Display decimal part
+        u32_lcd(i);
 }
 
-/**
- * @brief Decodes a signed 32-bit scalar value onto the visual grid
- */
+
+// Display signed number
 void s32_lcd(s32 n)
 {
-        if(n<0)                      // Validate polarity
+        // Check negative value
+        if(n<0)
         {
-                char_lcd('-');       
-                n*=-1;               // Transform value absolute
+                // Display minus sign
+                char_lcd('-');
+
+                // Make value positive
+                n*=-1;
         }
-        u32_lcd(n);                  
+
+        // Display number
+        u32_lcd(n);
 }
 
-/**
- * @brief Handles UI splash animations for the main security gateway system
- */
+
+// Display title
 void title(void)
 {
-        u8 i;
-        char line1[] = " SECURE ACCESS "; 
-        char line2[] = " CONTROL SYSTEM "; 
+        u8 i;   // Loop variable
 
-        cmd_lcd(0x01);               // Purge screen memory maps
-        
-        // Animated print sequence for System Banner Line 1
+        // First line text
+        char line1[] = " SECURE ACCESS ";
+
+        // Second line text
+        char line2[] = " CONTROL SYSTEM ";
+
+        // Clear LCD
+        cmd_lcd(0x01);
+
+        // Display first line
         for(i=0;line1[i]!=0;i++)
         {
-                cmd_lcd(GOTO_LINE1_POS_0+i);  
+                // Set first line position
+                cmd_lcd(GOTO_LINE1_POS_0+i);
+
+                // Delay
                 delay_ms(100);
+
+                // Display character
                 char_lcd(line1[i]);
-                delay_ms(100);  
+
+                // Delay
+                delay_ms(100);
         }
-        
-        // Animated print sequence for System Banner Line 2
+
+        // Display second line
         for(i=0;line2[i]!=0;i++)
         {
-                cmd_lcd(GOTO_LINE2_POS_0+i);   
-                delay_ms(100);		
-                char_lcd(line2[i]); 
+                // Set second line position
+                cmd_lcd(GOTO_LINE2_POS_0+i);
+
+                // Delay
+                delay_ms(100);
+
+                // Display character
+                char_lcd(line2[i]);
+
+                // Delay
                 delay_ms(100);
         }
 }
