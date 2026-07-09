@@ -1,994 +1,784 @@
-#include "lcd.h"
-#include "uart.h"
-#include "delay.h"
 
-// Send, receive buffers and variables
-u8 snd_buf[20], rec_buf[25], j=0, i=0, frame_ready=0;
+#include "lcd.h"                     // LCD driver header
+#include "uart.h"                    // UART driver header
+#include "delay.h"                   // Delay functions
+
+u8 snd_buf[20],rec_buf[25],j=0,i=0,frame_ready=0; // Global buffers and flags
 
 
-// Send packet through UART
 void send_packet(u8 *ptr,u8 n)
 {
-        // Send all bytes
-        for(j=0;j<n;j++)
+        for(j=0;j<n;j++)             // Send all packet bytes
         {
-                // Send one byte
-                u0_Tx_byte(ptr[j]);
+                u0_Tx_byte(ptr[j]);  // Transmit one byte through UART
         }
 }
 
 
-// Capture fingerprint image
 s8 Genimg(void)
 {
-        u16 timeout = 0;   // Timeout count
+        u16 timeout = 0;             // Timeout counter
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<12;j++)
+        for(j=0;j<12;j++)            // Clear transmit buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x03;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set image capture command
-        snd_buf[9] = 0x01;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Set checksum
-        snd_buf[10] = 0x00;
-        snd_buf[11] = 0x05;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Send packet
-        send_packet(snd_buf,12);
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Delay
-        delay_ms(10);
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[8] = 0x03;           // Packet length low byte
+
+        snd_buf[9] = 0x01;           // Fingerprint capture command
+
+        snd_buf[10] = 0x00;          // Checksum high byte
+
+        snd_buf[11] = 0x05;          // Checksum low byte
+
+        send_packet(snd_buf,12);     // Send packet to sensor
+
+        delay_ms(10);                // Small delay
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Check response
-        if(rec_buf[9] == 0x00)
+        if(rec_buf[9] == 0x00)       // Check response status
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
 
-
-// Convert image to template buffer 1
 s8 img2tp1(void)
 {
-        u16 timeout = 0;   // Timeout count
+        u16 timeout = 0;             // Timeout counter
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<13;j++)
+        for(j=0;j<13;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x04;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set image conversion command
-        snd_buf[9] = 0x02;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Select buffer 1
-        snd_buf[10] = 0x01;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Set checksum
-        snd_buf[11] = 0x00;
-        snd_buf[12] = 0x08;
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Clear frame flag
-        frame_ready = 0;
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Send packet
-        send_packet(snd_buf,13);
+        snd_buf[8] = 0x04;           // Packet length low byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[9] = 0x02;           // Image to template command
+
+        snd_buf[10] = 0x01;          // Store template in buffer 1
+
+        snd_buf[11] = 0x00;          // Checksum high byte
+
+        snd_buf[12] = 0x08;          // Checksum low byte
+
+        frame_ready = 0;             // Reset frame flag
+
+        send_packet(snd_buf,13);     // Send packet to fingerprint sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Check response
-        if(rec_buf[9] == 0x00)
+        if(rec_buf[9] == 0x00)       // Check sensor response
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
 
 
-// Convert image to template buffer 2
 s8 img2tp2(void)
 {
-        u16 timeout = 0;   // Timeout count
+        u16 timeout = 0;             // Timeout counter
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<13;j++)
+        for(j=0;j<13;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x04;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set image conversion command
-        snd_buf[9] = 0x02;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Select buffer 2
-        snd_buf[10] = 0x02;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Set checksum
-        snd_buf[11] = 0x00;
-        snd_buf[12] = 0x09;
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Send packet
-        send_packet(snd_buf,13);
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[8] = 0x04;           // Packet length low byte
+
+        snd_buf[9] = 0x02;           // Image to template command
+
+        snd_buf[10] = 0x02;          // Store template in buffer 2
+
+        snd_buf[11] = 0x00;          // Checksum high byte
+
+        snd_buf[12] = 0x09;          // Checksum low byte
+
+        send_packet(snd_buf,13);     // Send packet to sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Check response
-        if(rec_buf[9] == 0x00)
+        if(rec_buf[9] == 0x00)       // Check sensor response
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
 
-
-// Generate fingerprint model
 s8 regmodel(void)
 {
-        u16 timeout = 0;   // Timeout count
+        u16 timeout = 0;             // Timeout counter
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<12;j++)
+        for(j=0;j<12;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x03;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set model command
-        snd_buf[9] = 0x05;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Set checksum
-        snd_buf[10] = 0x00;
-        snd_buf[11] = 0x09;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Send packet
-        send_packet(snd_buf,12);
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[7] = 0x00;           // Packet length high byte
+
+        snd_buf[8] = 0x03;           // Packet length low byte
+
+        snd_buf[9] = 0x05;           // Generate model command
+
+        snd_buf[10] = 0x00;          // Checksum high byte
+
+        snd_buf[11] = 0x09;          // Checksum low byte
+
+        send_packet(snd_buf,12);     // Send packet to sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Check response
-        if(rec_buf[9] == 0x00)
+        if(rec_buf[9] == 0x00)       // Check sensor response
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
 
-
-// Store fingerprint
 s8 store(s8 id)
 {
-        u16 sum,timeout = 0;   // Checksum and timeout
+        u16 sum,timeout = 0;         // Variables for checksum and timeout
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<15;j++)
+        for(j=0;j<15;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x06;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set store command
-        snd_buf[9] = 0x06;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Select buffer 1
-        snd_buf[10] = 0x01;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Set ID high byte
-        snd_buf[11] = 0x00;
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Set ID
-        snd_buf[12] = id;
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Calculate checksum
-        sum = 0x01 + 0x00 + 0x06 + 0x06 + 0x01 + 0x00 + id;
+        snd_buf[8] = 0x06;           // Packet length low byte
 
-        // Set checksum high byte
-        snd_buf[13] = sum>>8;
+        snd_buf[9] = 0x06;           // Store template command
 
-        // Set checksum low byte
-        snd_buf[14] = sum&0xff;
+        snd_buf[10] = 0x01;          // Select buffer 1
 
-        // Send packet
-        send_packet(snd_buf,15);
+        snd_buf[11] = 0x00;          // Page ID high byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[12] = id;            // Page ID low byte
+
+        sum = 0x01 + 0x00 + 0x06 + 0x06 + 0x01 + 0x00 + id; // Calculate checksum
+
+        snd_buf[13] = sum>>8;        // Store checksum high byte
+
+        snd_buf[14] = sum&0xff;      // Store checksum low byte
+
+        send_packet(snd_buf,15);     // Send packet to sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Check response
-        if(rec_buf[9] == 0x00)
+        if(rec_buf[9] == 0x00)       // Check sensor response
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
 
-
-// Load stored fingerprint
 s8 load_char(s8 id)
 {
-        u16 sum,timeout = 0;   // Checksum and timeout
+        u16 sum,timeout = 0;         // Variables for checksum and timeout
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<15;j++)
+        for(j=0;j<15;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x06;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set load command
-        snd_buf[9] = 0x07;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Select buffer 2
-        snd_buf[10] = 0x02;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Set ID high byte
-        snd_buf[11] = 0x00;
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Set ID
-        snd_buf[12] = id;
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Calculate checksum
-        sum = 0x01 + 0x00 + 0x06 + 0x07 + 0x02 + 0x00 + id;
+        snd_buf[8] = 0x06;           // Packet length low byte
 
-        // Set checksum high byte
-        snd_buf[13] = (sum >> 8);
+        snd_buf[9] = 0x07;           // LoadChar command
 
-        // Set checksum low byte
-        snd_buf[14] = (sum & 0xFF);
+        snd_buf[10] = 0x02;          // Select Char Buffer 2
 
-        // Send packet
-        send_packet(snd_buf,15);
+        snd_buf[11] = 0x00;          // Page ID high byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[12] = id;            // Page ID low byte
+
+        sum = 0x01 + 0x00 + 0x06 + 0x07 + 0x02 + 0x00 + id; // Calculate checksum
+
+        snd_buf[13] = (sum >> 8);    // Store checksum high byte
+
+        snd_buf[14] = (sum & 0xFF);  // Store checksum low byte
+
+        send_packet(snd_buf,15);     // Send packet to sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Return response status
-        return (rec_buf[9] == 0x00) ? 0 : 1;
+        return (rec_buf[9] == 0x00) ? 0 : 1; // Return status
 }
 
 
-// Match fingerprint templates
 s8 match(void)
 {
-        u16 timeout = 0;   // Timeout count
+    u16 timeout = 0;                 // Timeout counter
 
-        // Clear frame flag
-        frame_ready = 0;
+    frame_ready = 0;                 // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+    i = 0;                           // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+    for(j=0;j<25;j++)                // Clear receive buffer
+    {
+        rec_buf[j] = 0;
+    }
+
+    for(j=0;j<12;j++)                // Clear send buffer
+    {
+        snd_buf[j] = 0;
+    }
+
+    snd_buf[0] = 0xEF;               // Packet header byte 1
+
+    snd_buf[1] = 0x01;               // Packet header byte 2
+
+    snd_buf[2] = 0xFF;               // Device address byte 1
+
+    snd_buf[3] = 0xFF;               // Device address byte 2
+
+    snd_buf[4] = 0xFF;               // Device address byte 3
+
+    snd_buf[5] = 0xFF;               // Device address byte 4
+
+    snd_buf[6] = 0x01;               // Command packet identifier
+
+    snd_buf[7] = 0x00;               // Packet length high byte
+
+    snd_buf[8] = 0x03;               // Packet length low byte
+
+    snd_buf[9] = 0x03;               // Match command
+
+    snd_buf[10] = 0x00;              // Checksum high byte
+
+    snd_buf[11] = 0x07;              // Checksum low byte
+
+    send_packet(snd_buf,12);         // Send packet to sensor
+
+    while(frame_ready == 0)          // Wait for response frame
+    {
+        delay_ms(1);                 // Small delay
+
+        timeout++;                   // Increment timeout counter
+
+        if(timeout > 100)            // Timeout condition
         {
-                rec_buf[j] = 0;
+                return 1;            // Return failure
         }
+    }
 
-        // Clear send buffer
-        for(j=0;j<12;j++)
-        {
-                snd_buf[j] = 0;
-        }
-
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
-
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
-
-        // Set packet type
-        snd_buf[6] = 0x01;
-
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x03;
-
-        // Set match command
-        snd_buf[9] = 0x03;
-
-        // Set checksum
-        snd_buf[10] = 0x00;
-        snd_buf[11] = 0x07;
-
-        // Send packet
-        send_packet(snd_buf,12);
-
-        // Wait for response
-        while(frame_ready == 0)
-        {
-                // Delay
-                delay_ms(1);
-
-                // Increase timeout count
-                timeout++;
-
-                // Check timeout
-                if(timeout > 100)
-                {
-                        // Return failure
-                        return 1;
-                }
-        }
-
-        // Return match status
-        return (rec_buf[9] == 0x00) ? 0 : 1;
+    return (rec_buf[9] == 0x00) ? 0 : 1; // Return match status
 }
 
-
-// Delete fingerprint
 s8 delete(s8 id)
 {
-        u16 sum,timeout = 0;   // Checksum and timeout
+        u16 sum,timeout = 0;         // Variables for checksum and timeout
 
-        // Clear frame flag
-        frame_ready = 0;
+        frame_ready = 0;             // Clear frame ready flag
 
-        // Reset receive index
-        i = 0;
+        i = 0;                       // Reset receive buffer index
 
-        // Clear receive buffer
-        for(j=0;j<25;j++)
+        for(j=0;j<25;j++)            // Clear receive buffer
         {
                 rec_buf[j] = 0;
         }
 
-        // Clear send buffer
-        for(j=0;j<15;j++)
+        for(j=0;j<15;j++)            // Clear send buffer
         {
                 snd_buf[j] = 0;
         }
 
-        // Set packet header
-        snd_buf[0] = 0xEF;
-        snd_buf[1] = 0x01;
+        snd_buf[0] = 0xEF;           // Packet header byte 1
 
-        // Set device address
-        snd_buf[2] = 0xFF;
-        snd_buf[3] = 0xFF;
-        snd_buf[4] = 0xFF;
-        snd_buf[5] = 0xFF;
+        snd_buf[1] = 0x01;           // Packet header byte 2
 
-        // Set packet type
-        snd_buf[6] = 0x01;
+        snd_buf[2] = 0xFF;           // Device address byte 1
 
-        // Set packet length
-        snd_buf[7] = 0x00;
-        snd_buf[8] = 0x07;
+        snd_buf[3] = 0xFF;           // Device address byte 2
 
-        // Set delete command
-        snd_buf[9] = 0x0C;
+        snd_buf[4] = 0xFF;           // Device address byte 3
 
-        // Set ID high byte
-        snd_buf[10] = 0x00;
+        snd_buf[5] = 0xFF;           // Device address byte 4
 
-        // Set ID
-        snd_buf[11] = id;
+        snd_buf[6] = 0x01;           // Command packet identifier
 
-        // Set template count high byte
-        snd_buf[12] = 0x00;
+        snd_buf[7] = 0x00;           // Packet length high byte
 
-        // Set template count low byte
-        snd_buf[13] = 0x01;
+        snd_buf[8] = 0x07;           // Packet length low byte
 
-        // Calculate checksum
-        sum = 0x01 + 0x00 + 0x07 + 0x0c + 0x00 + id + 0x00 + 0x01;
+        snd_buf[9] = 0x0C;           // Delete template command
 
-        // Set checksum high byte
-        snd_buf[14] = (sum >> 8)&0xff;
+        snd_buf[10] = 0x00;          // Page ID high byte
 
-        // Set checksum low byte
-        snd_buf[15] = (sum & 0xFF);
+        snd_buf[11] = id;            // Page ID low byte
 
-        // Send packet
-        send_packet(snd_buf,16);
+        snd_buf[12] = 0x00;          // Number of templates high byte
 
-        // Wait for response
-        while(frame_ready == 0)
+        snd_buf[13] = 0x01;          // Number of templates low byte
+
+        sum = 0x01 + 0x00 + 0x07 + 0x0c + 0x00 + id + 0x00 + 0x01; // Calculate checksum
+
+        snd_buf[14] = (sum >> 8)&0xff; // Store checksum high byte
+
+        snd_buf[15] = (sum & 0xFF);  // Store checksum low byte
+
+        send_packet(snd_buf,16);     // Send packet to sensor
+
+        while(frame_ready == 0)      // Wait for response frame
         {
-                // Delay
-                delay_ms(1);
+                delay_ms(1);         // Small delay
 
-                // Increase timeout count
-                timeout++;
+                timeout++;           // Increment timeout counter
 
-                // Check timeout
-                if(timeout > 1000)
+                if(timeout > 1000)   // Timeout condition
                 {
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Return delete status
-        return (rec_buf[9] == 0x00) ? 0 : 1;
+        return (rec_buf[9] == 0x00) ? 0 : 1; // Return delete status
 }
 
 
-// Enroll fingerprint
 s8 enroll(s8 id)
 {
-        s8 ret,retry=0;   // Return value and retry count
+        s8 ret,retry=0;              // Variables for return status and retry count
 
-        // Clear LCD
-        cmd_lcd(0x01);
+        cmd_lcd(0x01);               // Clear LCD screen
 
-        // Display message
-        str_lcd("PLACE FINGER ");
+        str_lcd("PLACE FINGER ");    // Display message
 
-        // Display symbol
-        char_lcd(2);
+        char_lcd(2);                 // Display finger symbol
 
-        // Wait for finger
-        while(Genimg() != 0)
+        // WAIT FOR FINGER
+        while(Genimg() != 0)         // Wait until finger is detected
         {
-                // Delay
-                delay_ms(50);
+                delay_ms(50);        // Small delay
 
-                // Increase retry count
-                retry++;
+                retry++;             // Increment retry counter
 
-                // Check timeout
-                if(retry > 100)
+                if(retry > 100)      // Timeout condition
                 {
-                        // Clear LCD
-                        cmd_lcd(0x01);
+                        cmd_lcd(0x01); // Clear LCD
 
-                        // Display timeout
-                        str_lcd("Timeout");
+                        str_lcd("Timeout"); // Display timeout message
 
-                        // Delay
-                        delay_ms(500);
+                        delay_ms(500); // Delay
 
-                        // Return failure
-                        return 1;
+                        return 1;    // Return failure
                 }
         }
 
-        // Capture fingerprint
-        ret = Genimg();
+        // FIRST CAPTURE
+        ret = Genimg();              // Capture fingerprint image
 
-        // Check capture status
-        if(ret != 0)
+        if(ret != 0)                 // Check capture status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("GenImg Fail");
+                str_lcd("GenImg Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Convert image to buffer 1
-        ret = img2tp1();
+        ret = img2tp1();             // Convert image into template buffer 1
 
-        // Check conversion status
-        if(ret != 0)
+        if(ret != 0)                 // Check conversion status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Tz1 Fail");
+                str_lcd("Tz1 Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Clear LCD
-        cmd_lcd(0x01);
+        cmd_lcd(0x01);               // Clear LCD
 
-        // Ask to remove finger
-        str_lcd("Remove Finger");
+        str_lcd("Remove Finger");    // Ask user to remove finger
 
-        // Wait until finger is removed
-        while(Genimg() == 0)
+        // WAIT UNTIL FINGER REMOVED
+        while(Genimg() == 0)         // Wait while finger remains on sensor
         {
-                // Delay
-                delay_ms(50);
+                delay_ms(50);        // Small delay
         }
 
-        // Delay
-        delay_ms(1000);
+        delay_ms(1000);              // Delay after finger removal
 
-        // Clear LCD
-        cmd_lcd(0x01);
+        cmd_lcd(0x01);               // Clear LCD
 
-        // Ask to place finger again
-        str_lcd("PLACE AGAIN ");
+        str_lcd("PLACE AGAIN ");     // Ask user to place finger again
 
-        // Display symbol
-        char_lcd(2);
+        char_lcd(2);                 // Display finger symbol
 
-        // Wait for finger
-        while(Genimg() != 0)
+        // WAIT AGAIN FOR FINGER
+        while(Genimg() != 0)         // Wait until finger detected again
         {
-                // Delay
-                delay_ms(50);
+                delay_ms(50);        // Small delay
         }
 
-        // Capture fingerprint again
-        ret = Genimg();
+        // SECOND CAPTURE
+        ret = Genimg();              // Capture second fingerprint image
 
-        // Check capture status
-        if(ret != 0)
+        if(ret != 0)                 // Check capture status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("GenImg2 Fail");
+                str_lcd("GenImg2 Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Convert image to buffer 2
-        ret = img2tp2();
+        ret = img2tp2();             // Convert image into template buffer 2
 
-        // Check conversion status
-        if(ret != 0)
+        if(ret != 0)                 // Check conversion status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Tz2 Fail");
+                str_lcd("Tz2 Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Generate fingerprint model
-        ret = regmodel();
+        // CREATE TEMPLATE
+        ret = regmodel();            // Generate fingerprint model
 
-        // Check model status
-        if(ret != 0)
+        if(ret != 0)                 // Check model generation status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Reg Fail");
+                str_lcd("Reg Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Store fingerprint
-        ret = store(id);
+        // STORE TEMPLATE
+        ret = store(id);             // Store fingerprint into database
 
-        // Check store status
-        if(ret != 0)
+        if(ret != 0)                 // Check store status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Store Fail");
+                str_lcd("Store Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Clear LCD
-        cmd_lcd(0x01);
+        cmd_lcd(0x01);               // Clear LCD
 
-        // Display success message
-        str_lcd("ENROLL DONE ");
+        str_lcd("ENROLL DONE ");     // Display success message
 
-        // Display symbol
-        char_lcd(1);
+        char_lcd(1);                 // Display success symbol
 
-        // Delay
-        delay_ms(500);
+        delay_ms(500);               // Delay
 
-        // Return success
-        return 0;
+        return 0;                    // Return success
 }
 
-
-// Verify fingerprint
 s8 verify(s8 id)
 {
-        s8 ret;   // Return value
+        s8 ret;                      // Variable for return status
 
-        // Clear LCD
-        cmd_lcd(0x01);
+        cmd_lcd(0x01);               // Clear LCD screen
 
-        // Display message
-        str_lcd("PLACE FINGER ");
+        str_lcd("PLACE FINGER ");    // Display message
 
-        // Display symbol
-        char_lcd(2);
+        char_lcd(2);                 // Display finger symbol
 
-        // Wait for finger
-        while(Genimg() != 0)
+        // WAIT FOR FINGER
+        while(Genimg() != 0)         // Wait until finger detected
         {
-                // Delay
-                delay_ms(50);
+                delay_ms(50);        // Small delay
         }
 
-        // Capture fingerprint
-        ret = Genimg();
+        // CAPTURE FINGERPRINT
+        ret = Genimg();              // Capture fingerprint image
 
-        // Check capture status
-        if(ret != 0)
+        if(ret != 0)                 // Check capture status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Gen Fail");
+                str_lcd("Gen Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Convert image to buffer 1
-        ret = img2tp1();
+        // CONVERT IMAGE INTO TEMPLATE BUFFER1
+        ret = img2tp1();             // Convert image into template
 
-        // Check conversion status
-        if(ret != 0)
+        if(ret != 0)                 // Check conversion status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Tz Fail");
+                str_lcd("Tz Fail");  // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Load stored fingerprint
-        ret = load_char(id);
+        // LOAD STORED TEMPLATE INTO BUFFER2
+        ret = load_char(id);         // Load stored fingerprint template
 
-        // Check load status
-        if(ret != 0)
+        if(ret != 0)                 // Check load status
         {
-                // Clear LCD
-                cmd_lcd(0x01);
+                cmd_lcd(0x01);       // Clear LCD
 
-                // Display failure message
-                str_lcd("Load Fail");
+                str_lcd("Load Fail"); // Display error message
 
-                // Delay
-                delay_ms(500);
+                delay_ms(500);       // Delay
 
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 
-        // Match fingerprints
-        ret = match();
+        // MATCH BOTH TEMPLATES
+        ret = match();               // Compare fingerprint templates
 
-        // Check match status
-        if(ret == 0)
+        if(ret == 0)                 // Check match status
         {
-                // Return success
-                return 0;
+                return 0;            // Return success
         }
+
         else
         {
-                // Return failure
-                return 1;
+                return 1;            // Return failure
         }
 }
+
