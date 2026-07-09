@@ -592,7 +592,9 @@ s8 enroll(s8 id)
                         return 1;    // Return failure
                 }
         }
+       // Buffer 1 stores the first or current fingerprint template
 
+      // Buffer 2 stores the second or stored fingerprint template
         // FIRST CAPTURE
         ret = Genimg();              // Capture fingerprint image
 
