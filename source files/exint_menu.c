@@ -10,9 +10,6 @@
 #include "r305.h"
 #include "l293d.h"
 
-//#define NEW_ROM
-#define OLD_ROM
-
 // External menu flag
 extern u8 menu_flag;
 
@@ -55,23 +52,8 @@ void init_eint2(void)
 // Initialize ID count
 void init_ids(void)
 {
-#ifdef NEW_ROM
-
-        // Set ID count to zero
-        ids = 0;
-
-        // Store ID count in EEPROM
-        i2c_eeprom_write_byte(0x50, 0x0000, ids);
-
-#endif
-
-
-#ifdef OLD_ROM
-
         // Read ID count from EEPROM
         ids = i2c_eeprom_read_byte(0x50, 0x0000);
-
-#endif
 }
 
 
