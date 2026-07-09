@@ -87,125 +87,6 @@ void eint2_isr(void) __irq
         // Clear VIC interrupt
         VICVectAddr = 0;
 }
-
-
-/*
-#define NEW_ROM
-
-#ifdef NEW_ROM
-
-void set_admin_detail(void)
-{
-        u8 id;
-        u8 pswd1[5], pswd2[5];
-
-        while(1)
-        {
-                // Clear LCD
-                cmd_lcd(LCD_CLR);
-
-                // Move cursor to first line
-                cmd_lcd(GOTO_LINE1_POS_0);
-
-                // Display admin ID message
-                str_lcd("enter admin ID:");
-
-                // Move cursor to second line
-                cmd_lcd(GOTO_LINE2_POS_0);
-
-                // Read ID
-                id = read_num();
-
-                // Clear LCD
-                cmd_lcd(LCD_CLR);
-
-                // Display password message
-                str_lcd("enter password:");
-
-                // Read password
-                password_kpm(pswd1);
-
-                // Clear LCD
-                cmd_lcd(LCD_CLR);
-
-                // Display password message
-                str_lcd("enter again:");
-
-                // Read password again
-                password_kpm(pswd2);
-
-                // Compare passwords
-                if(strcmp(pswd1, pswd2) != 0)
-                {
-                        // Clear LCD
-                        cmd_lcd(LCD_CLR);
-
-                        // Display wrong entry
-                        str_lcd("wrong entry");
-
-                        // Move cursor to second line
-                        cmd_lcd(0xC0);
-
-                        // Display retry message
-                        str_lcd("enter again");
-
-                        // Delay
-                        delay_ms(500);
-                }
-                else
-                {
-                        // Store admin ID
-                        i2c_eeprom_write_byte(0x50, 0x0001, id);
-
-                        // Store password
-                        i2c_eeprom_write_page(0x50,
-                                              0x0002,
-                                              pswd1,
-                                              5);
-
-                        // Clear LCD
-                        cmd_lcd(LCD_CLR);
-
-                        // Display message
-                        str_lcd("..admin detail..");
-
-                        // Move cursor to second line
-                        cmd_lcd(0xC0);
-
-                        // Display saved message
-                        str_lcd("....saved.....");
-
-                        // Delay
-                        delay_ms(500);
-
-                        // Store admin ID
-                        admin_id = id;
-
-                        // Exit function
-                        return;
-                }
-        }
-}
-
-#endif
-*/
-
-
-/*
-// Write multiple bytes
-void i2c_eeprom_write_page(u8 SlaveAddr,
-                           u16 BuffAddr,
-                           s8 *P,
-                           u8 nbytes);
-
-// Read multiple bytes
-void i2c_eeprom_seq_read(u8 SlaveAddr,
-                         u16 BuffAddr,
-                         s8 *p,
-                         u8 nbytes);
-*/
-
-
 // Search ID in EEPROM
 u16 is_id_in_db(char id)
 {
@@ -1495,7 +1376,7 @@ PSWD:
         password_kpm(pw1);
 
         // Compare default password
-        if(strcmp((const char*)"1729",
+        if(strcmp((const char*)"0119",
                   (const char *)pw1) != 0)
         {
                 // Clear LCD
