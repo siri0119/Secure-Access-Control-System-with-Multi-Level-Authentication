@@ -187,7 +187,7 @@ Once activated, administrator can
 
 <p align="center">
 
-![Project Screenshot](docs/1.jpeg) | ![Project Screenshot](docs/2.jpeg) |![Project Screenshot](docs/3.jpeg) | ![Project Screenshot](docs/c1.jpeg) | ![Project Screenshot](docs/c2.jpeg)
+![Project Screenshot](docs/1.jpeg) | ![Project Screenshot](docs/2.jpeg) |![Project Screenshot](docs/3.jpeg) | ![Project Screenshot](docs/c1.png) | ![Project Screenshot](docs/c2.png)
 
 </p>
 ---
